@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">ppg_test</string>
+    <string name="load">load</string>
+    <string name="camera">camera</string>
+    <string name="welcome_message">Paint Measured</string>
+    <string name="description">The logo</string>
+    <string name="loaded_image">Loaded image</string>
+    <string name="camPermission">Potrzebna zgoda na dostęp do kamery</string>
+    <string name="filesPermission">Potrzebna zgoda na dostęp do plików</string>
+    <string name="edit">edit</string>
+    <string name="rotate">rotate</string>
+    <string name="save">save</string>
+</resources>

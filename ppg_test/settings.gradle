@@ -1,0 +1,2 @@
+rootProject.name='ppg_test'
+include ':app'
