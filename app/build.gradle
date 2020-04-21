@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.ar.sceneform.plugin'
 
 android {
     compileSdkVersion 29
@@ -46,3 +47,10 @@ allprojects {
         google()
     }
 }
+
+apply plugin: 'com.google.ar.sceneform.plugin'
+
+sceneform.asset('sampledata/model.obj', // 'Source Asset Path' specified during import.
+        'default',                    // 'Material Path' specified during import.
+        'sampledata/model.sfa', // '.sfa Output Path' specified during import.
+        'src/main/res/raw/model')      // '.sfb Output Path' specified during import.
