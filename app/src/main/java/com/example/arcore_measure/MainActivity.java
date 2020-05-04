@@ -5,6 +5,10 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.shapes.Shape;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -68,6 +72,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private ArrayList<Anchor> currentAnchor = new ArrayList<>();
 
 
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    private float xAngle;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,8 +89,14 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         tvDistance = findViewById(R.id.tvDistance);
 
-        initModel();
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
+        initModel();
+        // to ma obliczać na bierząco odległość kamery od ziemi
+        arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
+
+        });
         // aim in the center
         MaterialFactory
                 .makeOpaqueWithColor(this, new com.google.ar.sceneform.rendering.Color(YELLOW))
@@ -105,7 +119,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 return;
             }
             //creating the anchor
-
             Anchor anchor = hitResult.createAnchor();
             AnchorNode anchorNode = new AnchorNode(anchor);
             anchorNode.setParent(arFragment.getArSceneView().getScene());
@@ -161,6 +174,18 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             }
         }
         currentAnchorNode.clear();
+    }
+
+    public void start() {
+        // enable our sensor when the activity is resumed, ask for
+        // 10 ms updates.
+        sensorManager.registerListener((SensorEventListener) this, sensor, 10000);
+    }
+
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+            xAngle = event.values[0];
+        }
     }
 
     @Override
@@ -226,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             Vector3 node0 = currentAnchorNode.get(0).getWorldPosition();
 
             float distance = Vector3.subtract(node0, node1).length();
-            tvDistance.setText("Distance : " + distance + " metres");
+            //tvDistance.setText("Distance : " + distance + " metres");
 
         }
     }
