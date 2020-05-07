@@ -4,9 +4,13 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.drawable.shapes.Shape;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
@@ -15,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
+import com.google.ar.core.Config;
 import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
@@ -28,15 +33,22 @@ import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException;
 import com.google.ar.core.exceptions.UnavailableSdkTooOldException;
 import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.ArSceneView;
+import com.google.ar.sceneform.Camera;
 import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.Scene;
+import com.google.ar.sceneform.collision.Ray;
+import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
+import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -51,11 +63,20 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     // Set to true ensures requestInstall() triggers installation if necessary.
     private boolean mUserRequestedInstall = true;
     private Session mSession;
+    private Config mConfig;
     private ArFragment arFragment;
     private ArrayList<AnchorNode> currentAnchorNode = new ArrayList<>();
     private TextView tvDistance;
+    private TextView txt_name;
     ModelRenderable cubeRenderable;
+    ModelRenderable renderableA;
+    ViewRenderable distance;
     private ArrayList<Anchor> currentAnchor = new ArrayList<>();
+    private Vector3 camPos;
+    private float distanceMeters;
+    private float width;
+    private float height;
+    private Node nameView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,7 +89,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         setContentView(R.layout.activity_main);
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
-        tvDistance = findViewById(R.id.tvDistance);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        width = size.x;
+        height = size.y;
 
         initModel();
 
@@ -82,10 +108,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             AnchorNode anchorNode = new AnchorNode(anchor);
             anchorNode.setParent(arFragment.getArSceneView().getScene());
 
-            //clearAnchor();
-
             currentAnchor.add(anchor);
             currentAnchorNode.add(anchorNode);
+
 
             //creating the node
             TransformableNode node = new TransformableNode(arFragment.getTransformationSystem());
@@ -112,12 +137,41 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     }
 
     private void initModel() {
+        ViewRenderable.builder()
+                .setView(this, R.layout.distance)
+                .build()
+                .thenAccept(renderable -> {
+                    distance = renderable;
+                    distance.setShadowCaster(false);
+                    distance.setShadowReceiver(false);
+                });
+
         MaterialFactory.makeOpaqueWithColor(this, new com.google.ar.sceneform.rendering.Color(RED))
                 .thenAccept(material -> {
-                    Vector3 vector3 = new Vector3(0.05f, 0.01f, 0.01f);
+                    Vector3 vector3 = new Vector3(0.05f, 0.0f, 0.01f);
                     cubeRenderable = ShapeFactory.makeCube(vector3, Vector3.zero(), material);
                     cubeRenderable.setShadowCaster(false);
                     cubeRenderable.setShadowReceiver(false);
+                });
+        //aim
+        MaterialFactory.makeOpaqueWithColor(this, new com.google.ar.sceneform.rendering.Color(BLUE))
+                .thenAccept(material -> {
+                    Vector3 vector3 = new Vector3(0.05f, 0.0f, 0.01f);
+                    renderableA = ShapeFactory.makeCube(vector3, Vector3.zero(), material);
+                    renderableA.setShadowCaster(false);
+                    renderableA.setShadowReceiver(false);
+
+                    Node nodeCam = new Node();
+                    nodeCam.setParent(arFragment.getArSceneView().getScene());
+                    nodeCam.setRenderable(renderableA);
+
+                    arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
+                        Camera camera = arFragment.getArSceneView().getScene().getCamera();
+                        Ray ray = camera.screenPointToRay(width/2f,height/2f);
+                        Vector3 newPos = ray.getPoint(1f);
+                        camPos = camera.getWorldPosition();
+                        nodeCam.setLocalPosition(newPos);
+                    });
                 });
     }
 
@@ -149,6 +203,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     case INSTALLED:
                         // Success, create the AR session.
                         mSession = new Session(this);
+                        mConfig = new Config(mSession);
+                        mConfig.setPlaneFindingMode(Config.PlaneFindingMode.HORIZONTAL_AND_VERTICAL);
+                        mConfig.setUpdateMode(Config.UpdateMode.LATEST_CAMERA_IMAGE);
                         break;
                     case INSTALL_REQUESTED:
                         // Ensures next invocation of requestInstall() will either return
@@ -185,13 +242,37 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         }
     }
 
+    public void addName (AnchorNode anchorNode, String name) {
+        if (nameView != null) {
+            arFragment.getArSceneView().getScene().removeChild(nameView);
+            if (anchorNode != null) {
+                anchorNode.getAnchor().detach();
+            }
+            nameView.setParent(null);
+            nameView = null;
+        }
+
+        if (nameView == null) {
+            nameView = new Node();
+            nameView.setParent(anchorNode);
+            nameView.setRenderable(distance);
+            nameView.setLocalPosition(camPos);
+
+            //set text
+            txt_name = (TextView) distance.getView();
+            txt_name.setText(name);
+        }
+    }
+
     @Override
     public void onUpdate(FrameTime frameTime) {
         Frame frame = arFragment.getArSceneView().getArFrame();
 
         Log.d("API123", "onUpdateFrame...current anchor node " + (currentAnchorNode == null));
-        
-        if (currentAnchorNode.size() == 2) {
+
+        //distance measure
+        if (currentAnchorNode.size() == 2)
+        {
             Vector3 node1 = currentAnchorNode.get(1).getWorldPosition();
             Vector3 node0 = currentAnchorNode.get(0).getWorldPosition();
 
@@ -199,8 +280,22 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             float dy = node0.y - node1.y;
             float dz = node0.z - node1.z;
 
-            float distanceMeters = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-            tvDistance.setText("Distance : " + distanceMeters + " metres");
+            distanceMeters = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+            DecimalFormat dM = new DecimalFormat("#.##");
+            distanceMeters = Float.valueOf(dM.format(distanceMeters));
+
+            //create mid anchor to show distance on screen
+            float[] midPos = {
+                    (node0.x + node1.x) / 2,
+                    (node0.y + node1.y) / 2,
+                    (node0.z + node1.z) / 2 };
+            float[] quaternion = {0.0f, 0.0f, 0.0f, 0.0f};
+
+            Pose pose = new Pose(midPos, quaternion);
+            Anchor anchorMid = arFragment.getArSceneView().getSession().createAnchor(pose);
+            AnchorNode anchorNodeMid = new AnchorNode(anchorMid);
+            anchorNodeMid.setParent(arFragment.getArSceneView().getScene());
+            addName(anchorNodeMid, "" + distanceMeters);
         }
     }
 }
