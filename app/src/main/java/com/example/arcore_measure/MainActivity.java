@@ -1,5 +1,6 @@
 package com.example.arcore_measure;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -36,6 +38,7 @@ import com.google.ar.sceneform.AnchorNode;
 import com.google.ar.sceneform.ArSceneView;
 import com.google.ar.sceneform.Camera;
 import com.google.ar.sceneform.FrameTime;
+import com.google.ar.sceneform.HitTestResult;
 import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.Scene;
 import com.google.ar.sceneform.collision.Ray;
@@ -43,6 +46,7 @@ import com.google.ar.sceneform.math.Quaternion;
 import com.google.ar.sceneform.math.Vector3;
 import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
+import com.google.ar.sceneform.rendering.Renderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
@@ -66,7 +70,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private Config mConfig;
     private ArFragment arFragment;
     private ArrayList<AnchorNode> currentAnchorNode = new ArrayList<>();
-    private TextView tvDistance;
+    private ArrayList<AnchorNode> currentAnchorNodeMid = new ArrayList<>();
+    private ArrayList<Node> currentNode = new ArrayList<>();
+    private AnchorNode anchorNodeMid;
+    private Anchor anchorMid;
     private TextView txt_name;
     ModelRenderable cubeRenderable;
     ModelRenderable renderableA;
@@ -77,6 +84,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private float width;
     private float height;
     private Node nameView;
+    private Pose pose;
+    private Vector3 node1;
+    private Vector3 node0;
+    private int i;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,14 +106,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         display.getSize(size);
         width = size.x;
         height = size.y;
-
         initModel();
 
         arFragment.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
             if (cubeRenderable == null){
                 return;
             }
-
             //creating the anchor
             Anchor anchor = hitResult.createAnchor();
             AnchorNode anchorNode = new AnchorNode(anchor);
@@ -119,6 +128,34 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             arFragment.getArSceneView().getScene().addOnUpdateListener(this);
             arFragment.getArSceneView().getScene().addChild(anchorNode);
             node.select();
+            if (currentAnchorNode.size() >= 2)
+            {
+                i = currentAnchorNode.size()-1;
+                node1 = currentAnchorNode.get(i).getWorldPosition();
+                node0 = currentAnchorNode.get(i-1).getWorldPosition();
+
+                float dx = node0.x - node1.x;
+                float dy = node0.y - node1.y;
+                float dz = node0.z - node1.z;
+
+                distanceMeters = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+                DecimalFormat dM = new DecimalFormat("#.##");
+                distanceMeters = Float.valueOf(dM.format(distanceMeters));
+
+                //create mid anchor to show distance on screen
+                float[] midPos = {
+                        (node0.x + node1.x) / 2,
+                        (node0.y + node1.y) / 2,
+                        (node0.z + node1.z) / 2};
+                float[] quaternion = {0.0f, 0.0f, 0.0f, 0.0f};
+
+                pose = new Pose(midPos, quaternion);
+                anchorMid = arFragment.getArSceneView().getSession().createAnchor(pose);
+                anchorNodeMid = new AnchorNode(anchorMid);
+                anchorNodeMid.setParent(arFragment.getArSceneView().getScene());
+                currentAnchorNodeMid.add(anchorNodeMid);
+                addName(currentAnchorNodeMid.get(i-1), "" + distanceMeters);
+            }
         });
     }
 
@@ -135,8 +172,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         }
         return true;
     }
-
-    private void initModel() {
+    private void initTextView(String name) {
         ViewRenderable.builder()
                 .setView(this, R.layout.distance)
                 .build()
@@ -144,8 +180,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     distance = renderable;
                     distance.setShadowCaster(false);
                     distance.setShadowReceiver(false);
+                    txt_name = (TextView) distance.getView();
+                    txt_name.setText(name);
                 });
-
+    }
+    private void initModel() {
         MaterialFactory.makeOpaqueWithColor(this, new com.google.ar.sceneform.rendering.Color(RED))
                 .thenAccept(material -> {
                     Vector3 vector3 = new Vector3(0.05f, 0.0f, 0.01f);
@@ -243,25 +282,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     }
 
     public void addName (AnchorNode anchorNode, String name) {
-        if (nameView != null) {
-            arFragment.getArSceneView().getScene().removeChild(nameView);
-            if (anchorNode != null) {
-                anchorNode.getAnchor().detach();
-            }
-            nameView.setParent(null);
-            nameView = null;
-        }
+        initTextView(name);
 
-        if (nameView == null) {
-            nameView = new Node();
-            nameView.setParent(anchorNode);
-            nameView.setRenderable(distance);
-            nameView.setLocalPosition(camPos);
-
-            //set text
-            txt_name = (TextView) distance.getView();
-            txt_name.setText(name);
-        }
+        nameView = new Node();
+        nameView.setParent(anchorNode);
+        nameView.setRenderable(distance);
+        nameView.setLocalPosition(camPos);
     }
 
     @Override
@@ -269,34 +295,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         Frame frame = arFragment.getArSceneView().getArFrame();
 
         Log.d("API123", "onUpdateFrame...current anchor node " + (currentAnchorNode == null));
-
-        //distance measure
-        if (currentAnchorNode.size() == 2)
-        {
-            Vector3 node1 = currentAnchorNode.get(1).getWorldPosition();
-            Vector3 node0 = currentAnchorNode.get(0).getWorldPosition();
-
-            float dx = node0.x - node1.x;
-            float dy = node0.y - node1.y;
-            float dz = node0.z - node1.z;
-
-            distanceMeters = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-            DecimalFormat dM = new DecimalFormat("#.##");
-            distanceMeters = Float.valueOf(dM.format(distanceMeters));
-
-            //create mid anchor to show distance on screen
-            float[] midPos = {
-                    (node0.x + node1.x) / 2,
-                    (node0.y + node1.y) / 2,
-                    (node0.z + node1.z) / 2 };
-            float[] quaternion = {0.0f, 0.0f, 0.0f, 0.0f};
-
-            Pose pose = new Pose(midPos, quaternion);
-            Anchor anchorMid = arFragment.getArSceneView().getSession().createAnchor(pose);
-            AnchorNode anchorNodeMid = new AnchorNode(anchorMid);
-            anchorNodeMid.setParent(arFragment.getArSceneView().getScene());
-            addName(anchorNodeMid, "" + distanceMeters);
-        }
     }
 }
 
