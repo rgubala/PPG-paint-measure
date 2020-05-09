@@ -119,10 +119,23 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             if (cubeRenderable == null){
                 return;
             }
+            //creating the anchor
+            Anchor anchor = hitResult.createAnchor();
+            AnchorNode anchorNode = new AnchorNode(anchor);
+            anchorNode.setParent(arFragment.getArSceneView().getScene());
 
-            arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdate);
+            currentAnchor.add(anchor);
+            currentAnchorNode.add(anchorNode);
 
-            //ifCreate = true;
+
+            //creating the node
+            TransformableNode node = new TransformableNode(arFragment.getTransformationSystem());
+            node.setRenderable(cubeRenderable);
+            node.setParent(anchorNode);
+            arFragment.getArSceneView().getScene().addOnUpdateListener(this);
+            arFragment.getArSceneView().getScene().addChild(anchorNode);
+            node.select();
+            ifCreate = true;
         });
     }
 
@@ -272,6 +285,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         if (arFragment.getArSceneView().getArFrame().getCamera().getTrackingState() != TrackingState.TRACKING) {
             return;
         }
+        /* ZAZNACZANIE PUNKTU WZGLEDEM POZYCJI KAMERY,
+           DZIALA TYLKO DLA JEDNEGO PUNKTU DLATEGO WYKOMENTOWANE
+
         if (anchorNode == null) {
             mSession = arFragment.getArSceneView().getSession();
             cameraPos = arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
@@ -285,8 +301,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             node.setRenderable(cubeRenderable);
             node.setParent(anchorNode);
             arFragment.getArSceneView().getScene().addChild(anchorNode);
-        }
-        /*if (currentAnchorNode.size() >= 2 && ifCreate)
+        }*/
+
+        if (currentAnchorNode.size() >= 2 && ifCreate)
         {
             i = currentAnchorNode.size()-1;
             node1 = currentAnchorNode.get(i).getWorldPosition();
@@ -314,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             currentAnchorNodeMid.add(anchorNodeMid);
             addName(currentAnchorNodeMid.get(i-1), "" + distanceMeters);
             ifCreate = false;
-        }*/
+        }
     }
 }
 
