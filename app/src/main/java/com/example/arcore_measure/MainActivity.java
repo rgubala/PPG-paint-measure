@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     ViewRenderable distance;
     private ArrayList<Anchor> currentAnchor = new ArrayList<>();
     private Vector3 camPos;
+    private Vector3 camFor;
     private float distanceMeters;
     private float width;
     private float height;
@@ -88,6 +89,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private Vector3 node1;
     private Vector3 node0;
     private int i;
+    private AnchorNode anchorNode;
+    private Vector3 cameraPos;
+    private Vector3 cameraFor;
+    private Vector3 pos;
+    private Vector3 newPos;
+    private Boolean ifCreate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,50 +119,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             if (cubeRenderable == null){
                 return;
             }
-            //creating the anchor
-            Anchor anchor = hitResult.createAnchor();
-            AnchorNode anchorNode = new AnchorNode(anchor);
-            anchorNode.setParent(arFragment.getArSceneView().getScene());
 
-            currentAnchor.add(anchor);
-            currentAnchorNode.add(anchorNode);
+            arFragment.getArSceneView().getScene().addOnUpdateListener(this::onUpdate);
 
-
-            //creating the node
-            TransformableNode node = new TransformableNode(arFragment.getTransformationSystem());
-            node.setRenderable(cubeRenderable);
-            node.setParent(anchorNode);
-            arFragment.getArSceneView().getScene().addOnUpdateListener(this);
-            arFragment.getArSceneView().getScene().addChild(anchorNode);
-            node.select();
-            if (currentAnchorNode.size() >= 2)
-            {
-                i = currentAnchorNode.size()-1;
-                node1 = currentAnchorNode.get(i).getWorldPosition();
-                node0 = currentAnchorNode.get(i-1).getWorldPosition();
-
-                float dx = node0.x - node1.x;
-                float dy = node0.y - node1.y;
-                float dz = node0.z - node1.z;
-
-                distanceMeters = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
-                DecimalFormat dM = new DecimalFormat("#.##");
-                distanceMeters = Float.valueOf(dM.format(distanceMeters));
-
-                //create mid anchor to show distance on screen
-                float[] midPos = {
-                        (node0.x + node1.x) / 2,
-                        (node0.y + node1.y) / 2,
-                        (node0.z + node1.z) / 2};
-                float[] quaternion = {0.0f, 0.0f, 0.0f, 0.0f};
-
-                pose = new Pose(midPos, quaternion);
-                anchorMid = arFragment.getArSceneView().getSession().createAnchor(pose);
-                anchorNodeMid = new AnchorNode(anchorMid);
-                anchorNodeMid.setParent(arFragment.getArSceneView().getScene());
-                currentAnchorNodeMid.add(anchorNodeMid);
-                addName(currentAnchorNodeMid.get(i-1), "" + distanceMeters);
-            }
+            //ifCreate = true;
         });
     }
 
@@ -206,9 +173,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
                     arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
                         Camera camera = arFragment.getArSceneView().getScene().getCamera();
-                        Ray ray = camera.screenPointToRay(width/2f,height/2f);
-                        Vector3 newPos = ray.getPoint(1f);
                         camPos = camera.getWorldPosition();
+                        camFor = camera.getForward();
+                        newPos = Vector3.add(camPos, camFor.scaled(1f));
                         nodeCam.setLocalPosition(newPos);
                     });
                 });
@@ -295,6 +262,59 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         Frame frame = arFragment.getArSceneView().getArFrame();
 
         Log.d("API123", "onUpdateFrame...current anchor node " + (currentAnchorNode == null));
+
+        arFragment.onUpdate(frameTime);
+
+        if (arFragment.getArSceneView().getArFrame() == null) {
+            return;
+        }
+
+        if (arFragment.getArSceneView().getArFrame().getCamera().getTrackingState() != TrackingState.TRACKING) {
+            return;
+        }
+        if (anchorNode == null) {
+            mSession = arFragment.getArSceneView().getSession();
+            cameraPos = arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
+            cameraFor = arFragment.getArSceneView().getScene().getCamera().getForward();
+            pos = Vector3.add(cameraPos, cameraFor.scaled(1f));
+            pose = Pose.makeTranslation(pos.x, pos.y, pos.z);
+            Anchor anchor = mSession.createAnchor(pose);
+            anchorNode = new AnchorNode(anchor);
+            anchorNode.setParent(arFragment.getArSceneView().getScene());
+            Node node = new Node();
+            node.setRenderable(cubeRenderable);
+            node.setParent(anchorNode);
+            arFragment.getArSceneView().getScene().addChild(anchorNode);
+        }
+        /*if (currentAnchorNode.size() >= 2 && ifCreate)
+        {
+            i = currentAnchorNode.size()-1;
+            node1 = currentAnchorNode.get(i).getWorldPosition();
+            node0 = currentAnchorNode.get(i-1).getWorldPosition();
+
+            float dx = node0.x - node1.x;
+            float dy = node0.y - node1.y;
+            float dz = node0.z - node1.z;
+
+            distanceMeters = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
+            DecimalFormat dM = new DecimalFormat("#.##");
+            distanceMeters = Float.valueOf(dM.format(distanceMeters));
+
+            //create mid anchor to show distance on screen
+            float[] midPos = {
+                    (node0.x + node1.x) / 2,
+                    (node0.y + node1.y) / 2,
+                    (node0.z + node1.z) / 2};
+            float[] quaternion = {0.0f, 0.0f, 0.0f, 0.0f};
+
+            pose = new Pose(midPos, quaternion);
+            anchorMid = arFragment.getArSceneView().getSession().createAnchor(pose);
+            anchorNodeMid = new AnchorNode(anchorMid);
+            anchorNodeMid.setParent(arFragment.getArSceneView().getScene());
+            currentAnchorNodeMid.add(anchorNodeMid);
+            addName(currentAnchorNodeMid.get(i-1), "" + distanceMeters);
+            ifCreate = false;
+        }*/
     }
 }
 
