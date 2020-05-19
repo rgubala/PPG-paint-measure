@@ -10,6 +10,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -78,6 +79,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private float roomPerimeter = 0;
     private float roomHeight = 0;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,9 +94,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         tvDistance = findViewById(R.id.tvDistance);
 
         initModel();
-        addPoint();
-
+        arFragment.getView().performClick();
+        arFragment.setOnTapArPlaneListener(this::addPoint);
         Toast.makeText(this, "Zmierz obwód pokoju", Toast.LENGTH_LONG).show();
+
+
 
     }
 
@@ -113,31 +118,28 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
 
     //metoda dodająca punkt do powierzchni
-    private void addPoint() {
+    private void addPoint(HitResult hitResult, Plane plane, MotionEvent motionEvent) {
 
-        arFragment.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
-            if (cubeRenderable == null){
-                return;
-            }
-            //creating the anchor
-            Anchor anchor = hitResult.createAnchor();
-            AnchorNode anchorNode = new AnchorNode(anchor);
-            anchorNode.setParent(arFragment.getArSceneView().getScene());
+        if (cubeRenderable == null){
+            return;
+        }
+        //creating the anchor
+        Anchor anchor = hitResult.createAnchor();
+        AnchorNode anchorNode = new AnchorNode(anchor);
+        anchorNode.setParent(arFragment.getArSceneView().getScene());
 
-            currentAnchor.add(anchor);
-            currentAnchorNode.add(anchorNode);
+        currentAnchor.add(anchor);
+        currentAnchorNode.add(anchorNode);
 
-            //creating the node
-            TransformableNode node = new TransformableNode(arFragment.getTransformationSystem());
-            node.setRenderable(cubeRenderable);
-            node.setParent(anchorNode);
-            arFragment.getArSceneView().getScene().addOnUpdateListener(this);
-            arFragment.getArSceneView().getScene().addChild(anchorNode);
-            node.select();
+        //creating the node
+        TransformableNode node = new TransformableNode(arFragment.getTransformationSystem());
+        node.setRenderable(cubeRenderable);
+        node.setParent(anchorNode);
+        arFragment.getArSceneView().getScene().addOnUpdateListener(this);
+        arFragment.getArSceneView().getScene().addChild(anchorNode);
+        node.select();
 
-            showDistance();
-
-        });
+        showDistance();
     }
 
     private void initModel() {
@@ -274,5 +276,24 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         else
             Toast.makeText(this, "Nie wykonano wszystkich pomiarów", Toast.LENGTH_SHORT).show();
     }
+
+    // metoda, która imituje kliknięcie środka ekranu
+    public void addFromCenter(View view) {
+
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis() + 10;
+        float x = (float)(this.getResources().getDisplayMetrics().widthPixels) / 2;
+        float y = (float)(this.getResources().getDisplayMetrics().heightPixels) / 2;
+        MotionEvent motionEvent = MotionEvent.obtain(
+                downTime,
+                eventTime,
+                MotionEvent.ACTION_UP,
+                x,
+                y,
+                0
+        );
+        arFragment.getArSceneView().dispatchTouchEvent(motionEvent);
+    }
+
 }
 
