@@ -13,6 +13,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,9 +47,11 @@ import com.google.ar.sceneform.rendering.MaterialFactory;
 import com.google.ar.sceneform.rendering.ModelRenderable;
 import com.google.ar.sceneform.rendering.ShapeFactory;
 import com.google.ar.sceneform.ux.ArFragment;
+import com.google.ar.sceneform.ux.BaseArFragment;
 import com.google.ar.sceneform.ux.PlaneDiscoveryController;
 import com.google.ar.sceneform.ux.TransformableNode;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -71,10 +74,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     ModelRenderable cubeRenderable;
     private ArrayList<Anchor> currentAnchor = new ArrayList<>();
 
-
-    private SensorManager sensorManager;
-    private Sensor sensor;
-    private float xAngle;
+    private float distance = 0;
+    private float roomPerimeter = 0;
+    private float roomHeight = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,60 +85,16 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         if (!checkIsSupportedDeviceOrFinish(this)) {
             Toast.makeText(getApplicationContext(), "Device not supported", Toast.LENGTH_LONG).show();
         }
-
         setContentView(R.layout.activity_main);
 
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         tvDistance = findViewById(R.id.tvDistance);
 
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
-
         initModel();
-        // to ma obliczać na bierząco odległość kamery od ziemi
-        arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
+        addPoint();
 
-        });
-        // aim in the center
-        MaterialFactory
-                .makeOpaqueWithColor(this, new com.google.ar.sceneform.rendering.Color(YELLOW))
-                .thenAccept(material -> {
-                    ModelRenderable renderable = ShapeFactory.makeCube(new Vector3(.05f,0,.05f),zero(),material);
-                    Node node = new Node();
-                    node.setParent(arFragment.getArSceneView().getScene());
-                    node.setRenderable(renderable);
+        Toast.makeText(this, "Zmierz obwód pokoju", Toast.LENGTH_LONG).show();
 
-                    arFragment.getArSceneView().getScene().addOnUpdateListener(frameTime -> {
-                        Camera camera = arFragment.getArSceneView().getScene().getCamera();
-                        Ray ray = camera.screenPointToRay(1080/2f,1920/2f);
-                        Vector3 newPosition = ray.getPoint(1f);
-                        node.setLocalPosition(newPosition);
-                    });
-                });
-
-        arFragment.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
-            if (cubeRenderable == null){
-                return;
-            }
-            //creating the anchor
-            Anchor anchor = hitResult.createAnchor();
-            AnchorNode anchorNode = new AnchorNode(anchor);
-            anchorNode.setParent(arFragment.getArSceneView().getScene());
-
-            //clearAnchor();
-
-            currentAnchor.add(anchor);
-            currentAnchorNode.add(anchorNode);
-
-            //creating the node
-            TransformableNode node = new TransformableNode(arFragment.getTransformationSystem());
-            node.setRenderable(cubeRenderable);
-            node.setParent(anchorNode);
-            arFragment.getArSceneView().getScene().addOnUpdateListener(this);
-            arFragment.getArSceneView().getScene().addChild(anchorNode);
-            node.select();
-
-        });
     }
 
     public boolean checkIsSupportedDeviceOrFinish(final Activity activity) {
@@ -153,7 +111,37 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         return true;
     }
 
+
+    //metoda dodająca punkt do powierzchni
+    private void addPoint() {
+
+        arFragment.setOnTapArPlaneListener((hitResult, plane, motionEvent) -> {
+            if (cubeRenderable == null){
+                return;
+            }
+            //creating the anchor
+            Anchor anchor = hitResult.createAnchor();
+            AnchorNode anchorNode = new AnchorNode(anchor);
+            anchorNode.setParent(arFragment.getArSceneView().getScene());
+
+            currentAnchor.add(anchor);
+            currentAnchorNode.add(anchorNode);
+
+            //creating the node
+            TransformableNode node = new TransformableNode(arFragment.getTransformationSystem());
+            node.setRenderable(cubeRenderable);
+            node.setParent(anchorNode);
+            arFragment.getArSceneView().getScene().addOnUpdateListener(this);
+            arFragment.getArSceneView().getScene().addChild(anchorNode);
+            node.select();
+
+            showDistance();
+
+        });
+    }
+
     private void initModel() {
+        // wygląd punktu na powierzchni
         MaterialFactory.makeOpaqueWithColor(this, new com.google.ar.sceneform.rendering.Color(RED))
                 .thenAccept(material -> {
                     Vector3 vector3 = new Vector3(.02f, .02f, .02f);
@@ -161,8 +149,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     cubeRenderable.setShadowCaster(false);
                     cubeRenderable.setShadowReceiver(false);
                 });
-    }
 
+    }
 
     private void clearAnchor() {
         currentAnchor.clear();
@@ -174,18 +162,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             }
         }
         currentAnchorNode.clear();
-    }
-
-    public void start() {
-        // enable our sensor when the activity is resumed, ask for
-        // 10 ms updates.
-        sensorManager.registerListener((SensorEventListener) this, sensor, 10000);
-    }
-
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
-            xAngle = event.values[0];
-        }
     }
 
     @Override
@@ -204,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     case INSTALLED:
                         // Success, create the AR session.
                         mSession = new Session(this);
+
                         break;
                     case INSTALL_REQUESTED:
                         // Ensures next invocation of requestInstall() will either return
@@ -243,17 +220,59 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     @Override
     public void onUpdate(FrameTime frameTime) {
-        Frame frame = arFragment.getArSceneView().getArFrame();
-        Log.d("API123", "onUpdateFrame...current anchor node " + (currentAnchorNode == null));
 
-        if (currentAnchorNode.size() == 2) {
-            Vector3 node1 = currentAnchorNode.get(1).getWorldPosition();
-            Vector3 node0 = currentAnchorNode.get(0).getWorldPosition();
+    }
 
-            float distance = Vector3.subtract(node0, node1).length();
-            //tvDistance.setText("Distance : " + distance + " metres");
+    // suma odległości pomiędzy wszystkimi zaznaczonymi punktami
+    private void showDistance() {
+        if (currentAnchorNode.size() >= 2) {
+            int i = currentAnchorNode.size();
+            Vector3 node1 = currentAnchorNode.get(i-1).getWorldPosition();
+            Vector3 node0 = currentAnchorNode.get(i-2).getWorldPosition();
 
+            distance += Vector3.subtract(node0, node1).length();
+            tvDistance.setText("Distance : " + distance + " metres");
         }
+    }
+
+    //wywoływane z przycisku "dodaj wymiar"
+    public void addDimension(View view) {
+
+        if(distance != 0 && (roomPerimeter == 0 || roomHeight == 0)) {
+            if(distance != 0 && roomPerimeter == 0) {
+                Toast.makeText(this, "Dodano szerokość ściany.\nTeraz zmierz wysokość ściany", Toast.LENGTH_LONG).show();
+                roomPerimeter = distance;
+                distance = 0;
+                tvDistance.setText("---");
+                clearAnchor();
+            }
+            if(distance != 0 && roomPerimeter != 0 && roomHeight == 0) {
+                Toast.makeText(this, "Dodano wysokość ściany", Toast.LENGTH_LONG).show();
+                roomHeight = distance;
+                distance = 0;
+                tvDistance.setText("---");
+                clearAnchor();
+            }
+            return;
+        }
+        if (distance == 0 && roomPerimeter == 0 && roomHeight == 0) {
+            Toast.makeText(this, "Jeszcze nie wykonano żadnych pomiarów", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (distance == 0 && roomPerimeter != 0 && roomHeight != 0) {
+            Toast.makeText(this, "Wykonano już wszystkie potrzebne pomiary", Toast.LENGTH_SHORT).show();
+            return;
+        }
+    }
+
+    //wywoływane z przycisku "powierzchnia ściany"
+    public void calculateSurfaceArea (View view) {
+        if(roomPerimeter != 0 && roomHeight != 0) {
+            float surfaceArea = roomHeight * roomPerimeter;
+            Toast.makeText(this, "Powierzchnia ścian = "+ surfaceArea + " m", Toast.LENGTH_LONG).show();
+        }
+        else
+            Toast.makeText(this, "Nie wykonano wszystkich pomiarów", Toast.LENGTH_SHORT).show();
     }
 }
 
