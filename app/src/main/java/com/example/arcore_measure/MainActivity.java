@@ -127,6 +127,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
         initModel();
 
+        arFragment.getView().performClick();
         arFragment.setOnTapArPlaneListener(this::refreshAim);
         Toast.makeText(this, "Zmierz obwód pokoju", Toast.LENGTH_LONG).show();
 
@@ -288,16 +289,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 Toast.makeText(this, "Dodano szerokość ściany.\nTeraz zmierz wysokość ściany", Toast.LENGTH_LONG).show();
                 roomPerimeter = difference.length();
                 distance = 0;
-                tvDistance.setText("---");
-                clearAnchor();
                 btnSave.setEnabled(false);
             }
             if(difference.length() != 0 && roomPerimeter != 0 && roomHeight == 0) {
                 Toast.makeText(this, "Dodano wysokość ściany", Toast.LENGTH_LONG).show();
                 roomHeight = difference.length();
                 distance = 0;
-                tvDistance.setText("---");
-                clearAnchor();
                 btnSave.setEnabled(false);
             }
             return;
@@ -408,7 +405,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 initTextBox(difference.length());
                 distanceNode.setRenderable(textBox);
                 arFragment.getArSceneView().getScene().addChild(lineBetween);
-
+                btnSave.setEnabled(true);
             }
         }
     }
