@@ -318,7 +318,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     public void calculateSurfaceArea (View view) {
         if(roomPerimeter != 0 && roomHeight != 0) {
             surfaceArea = (float) (Math.round( roomHeight * roomPerimeter * 100)/ 100.0);
-            // Toast.makeText(this, "Powierzchnia ścian = "+ surfaceArea + " m", Toast.LENGTH_LONG).show();
             showAlertDialog(MainActivity.this);
             btnRoom.setEnabled(false);
         }
@@ -435,26 +434,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     /* Okno pokazujące obliczoną powierzchnię*/
     public void  showAlertDialog (Activity activity){
-       /* AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogStyle);
-
-        builder.setMessage("This surface is " + surfaceArea +" m\u00B2");
-        builder.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                showSaveDialog(MainActivity.this);
-            }
-        });
-        builder.show(); */
 
         dialogSurfValue = new Dialog(activity);
         dialogSurfValue.setCancelable(false);
         dialogSurfValue.setContentView(R.layout.dialog_surface);
+        dialogSurfValue.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         TextView textViewSurfaceValue = (TextView) dialogSurfValue.findViewById(R.id.textViewSurfaceValue);
         textViewSurfaceValue.setText("This surface is " + surfaceArea +" m\u00B2");
         Button btnOk = (Button) dialogSurfValue.findViewById(R.id.btnSurfOK);
@@ -470,8 +454,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // showSaveDialog(MainActivity.this);
                 dialogSurfValue.dismiss();
+                showSaveDialog(MainActivity.this);
+
 
             }
         });
@@ -482,39 +467,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     /* Okno zapisywania powierzchni*/
     public void showSaveDialog (Activity activity){
-        /*dialogSave = new Dialog(activity);
-        dialogSave.setCancelable(false);
-        dialogSave.setContentView(R.layout.dialog_save);
-
-
-        Button btnExit = (Button) dialogSave.findViewById(R.id.btnSurfOK);
-        btnExit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialogSave.dismiss();
-            }
-        });
-
-        Button btnSave = (Button) dialogSave.findViewById(R.id.btnSurfSave);
-        EditText nameSurf = (EditText) dialogSave.findViewById(R.id.editTextNameSufr);
-        TextView textViewSurfValue = (TextView) dialogSave.findViewById(R.id.surfValueTextView);
-        textViewSurfValue.setText(surfaceArea + "m\u00B2");
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Measurements measur = new Measurements(nameSurf.getText().toString(), Float.valueOf(surfaceArea));
-                measurementViewModel.insert(measur);
-                showDialog(MainActivity.this);
-                dialogSave.dismiss();
-            }
-        });
-
-        dialogSave.show(); */
 
         dialogSave = new Dialog(activity);
         dialogSave.setCancelable(false);
         dialogSave.setContentView(R.layout.dialog_save);
-
+        dialogSave.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         Button btnExit = (Button) dialogSave.findViewById(R.id.btndialogExit);
         btnExit.setOnClickListener(new View.OnClickListener() {
@@ -548,39 +505,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     /* Okno z zapisanymi powierzchniami*/
     public void showDialog(Activity activity){
 
-        /* dialog = new Dialog(activity);
-        dialog.setCancelable(false);
-        dialog.setContentView(R.layout.dialog_recycler);
-
-        Button btndialog = (Button) dialog.findViewById(R.id.btnSurfOK);
-        btndialog.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                dialog.dismiss();
-            }
-        });
-        RecyclerView recyclerView = dialog.findViewById(R.id.);
-        final MeasurementListAdapter adapter = new MeasurementListAdapter(this);
-       recyclerView.setAdapter(adapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        measurementViewModel.getAllMeasurements().observe(this, new Observer<List<Measurements>>() {
-            @Override
-            public void onChanged(List<Measurements> measurements) {
-                adapter.setMeasurements(measurements);
-            }
-        });
-        recyclerView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            }
-        });
-
-        dialog.show();*/
-
         dialog = new Dialog(activity);
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.dialog_recycler);
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         Button btndialog = (Button) dialog.findViewById(R.id.btndialogOk);
         btndialog.setOnClickListener(new View.OnClickListener() {
