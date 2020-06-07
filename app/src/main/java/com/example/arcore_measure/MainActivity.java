@@ -95,9 +95,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     public static Dialog dialog;
     public static Dialog dialogSave;
     private MeasurementViewModel measurementViewModel;
+    public static Dialog dialogSurfValue;
     float surfaceArea;
     private Button btnSave;
     private Button btnRoom;
+    private Vector3 difference;
     private Vector3 camPos;
     private Vector3 camFor;
     private Vector3 newPos;
@@ -126,6 +128,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
         initModel();
 
+        arFragment.getView().performClick();
         arFragment.setOnTapArPlaneListener(this::refreshAim);
         Toast.makeText(this, "Zmierz obwód pokoju", Toast.LENGTH_LONG).show();
 
@@ -282,31 +285,31 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //wywoływane z przycisku "dodaj wymiar"
     public void addDimension(View view) {
-        if(distance != 0 && (roomPerimeter == 0 || roomHeight == 0)) {
-            if(distance != 0 && roomPerimeter == 0) {
+        if(difference.length() != 0 && (roomPerimeter == 0 || roomHeight == 0)) {
+            if(difference.length() != 0 && roomPerimeter == 0) {
                 Toast.makeText(this, "Dodano szerokość ściany.\nTeraz zmierz wysokość ściany", Toast.LENGTH_LONG).show();
-                roomPerimeter = distance;
+                roomPerimeter = difference.length();
                 distance = 0;
-                tvDistance.setText("---");
-                clearAnchor();
+                difference = Vector3.zero();
+
                 btnSave.setEnabled(false);
             }
-            if(distance != 0 && roomPerimeter != 0 && roomHeight == 0) {
+            if(difference.length() != 0 && roomPerimeter != 0 && roomHeight == 0) {
                 Toast.makeText(this, "Dodano wysokość ściany", Toast.LENGTH_LONG).show();
-                roomHeight = distance;
+                roomHeight = difference.length();
                 distance = 0;
-                tvDistance.setText("---");
-                clearAnchor();
                 btnSave.setEnabled(false);
+                difference = Vector3.zero();
             }
             return;
         }
-        if (distance == 0 && roomPerimeter == 0 && roomHeight == 0) {
+        if (difference.length() == 0 && roomPerimeter == 0 && roomHeight == 0) {
             Toast.makeText(this, "Jeszcze nie wykonano żadnych pomiarów", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (distance == 0 && roomPerimeter != 0 && roomHeight != 0) {
+        if (roomPerimeter != 0 && roomHeight != 0) {
             Toast.makeText(this, "Wykonano już wszystkie potrzebne pomiary", Toast.LENGTH_SHORT).show();
+            calculateSurfaceArea(view);
             return;
         }
     }
@@ -315,7 +318,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     public void calculateSurfaceArea (View view) {
         if(roomPerimeter != 0 && roomHeight != 0) {
             surfaceArea = (float) (Math.round( roomHeight * roomPerimeter * 100)/ 100.0);
-           // Toast.makeText(this, "Powierzchnia ścian = "+ surfaceArea + " m", Toast.LENGTH_LONG).show();
+            // Toast.makeText(this, "Powierzchnia ścian = "+ surfaceArea + " m", Toast.LENGTH_LONG).show();
             showAlertDialog(MainActivity.this);
             btnRoom.setEnabled(false);
         }
@@ -386,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
                 Vector3 node1Pos = currentAnchorNode.get(currentAnchorNode.size() - 2).getWorldPosition();
                 Vector3 node2Pos = currentAnchorNode.get(currentAnchorNode.size() - 1).getWorldPosition();
-                Vector3 difference = Vector3.subtract(node1Pos, node2Pos);
+                difference = Vector3.subtract(node1Pos, node2Pos);
 
                 final Vector3 directionFromTopToBottom = difference.normalized();
                 final Quaternion rotationFromAToB =
@@ -407,7 +410,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 initTextBox(difference.length());
                 distanceNode.setRenderable(textBox);
                 arFragment.getArSceneView().getScene().addChild(lineBetween);
-
+                btnSave.setEnabled(true);
             }
         }
     }
@@ -432,7 +435,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     /* Okno pokazujące obliczoną powierzchnię*/
     public void  showAlertDialog (Activity activity){
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogStyle);
+       /* AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.AlertDialogStyle);
 
         builder.setMessage("This surface is " + surfaceArea +" m\u00B2");
         builder.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
@@ -447,13 +450,39 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 showSaveDialog(MainActivity.this);
             }
         });
-        builder.show();
+        builder.show(); */
+
+        dialogSurfValue = new Dialog(activity);
+        dialogSurfValue.setCancelable(false);
+        dialogSurfValue.setContentView(R.layout.dialog_surface);
+        TextView textViewSurfaceValue = (TextView) dialogSurfValue.findViewById(R.id.textViewSurfaceValue);
+        textViewSurfaceValue.setText("This surface is " + surfaceArea +" m\u00B2");
+        Button btnOk = (Button) dialogSurfValue.findViewById(R.id.btnSurfOK);
+        btnOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogSurfValue.dismiss();
+            }
+        });
+
+        Button btnSave = (Button) dialogSurfValue.findViewById(R.id.btnSurfSave);
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               // showSaveDialog(MainActivity.this);
+                dialogSurfValue.dismiss();
+
+            }
+        });
+
+        dialogSurfValue.show();
 
     }
 
     /* Okno zapisywania powierzchni*/
     public void showSaveDialog (Activity activity){
-        dialogSave = new Dialog(activity);
+        /*dialogSave = new Dialog(activity);
         dialogSave.setCancelable(false);
         dialogSave.setContentView(R.layout.dialog_save);
 
@@ -467,7 +496,36 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         });
 
         Button btnSave = (Button) dialogSave.findViewById(R.id.btnSurfSave);
-        /*EditText nameSurf = (EditText) dialogSave.findViewById(R.id.editTextNameSufr);
+        EditText nameSurf = (EditText) dialogSave.findViewById(R.id.editTextNameSufr);
+        TextView textViewSurfValue = (TextView) dialogSave.findViewById(R.id.surfValueTextView);
+        textViewSurfValue.setText(surfaceArea + "m\u00B2");
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Measurements measur = new Measurements(nameSurf.getText().toString(), Float.valueOf(surfaceArea));
+                measurementViewModel.insert(measur);
+                showDialog(MainActivity.this);
+                dialogSave.dismiss();
+            }
+        });
+
+        dialogSave.show(); */
+
+        dialogSave = new Dialog(activity);
+        dialogSave.setCancelable(false);
+        dialogSave.setContentView(R.layout.dialog_save);
+
+
+        Button btnExit = (Button) dialogSave.findViewById(R.id.btndialogExit);
+        btnExit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogSave.dismiss();
+            }
+        });
+
+        Button btnSave = (Button) dialogSave.findViewById(R.id.btndialogSave);
+        EditText nameSurf = (EditText) dialogSave.findViewById(R.id.editTextNameSufr);
         TextView textViewSurfValue = (TextView) dialogSave.findViewById(R.id.surfValueTextView);
         textViewSurfValue.setText(surfaceArea + "m\u00B2");
 
@@ -481,7 +539,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 dialogSave.dismiss();
 
             }
-        });*/
+        });
 
         dialogSave.show();
 
@@ -490,7 +548,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     /* Okno z zapisanymi powierzchniami*/
     public void showDialog(Activity activity){
 
-        dialog = new Dialog(activity);
+        /* dialog = new Dialog(activity);
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.dialog_recycler);
 
@@ -502,9 +560,39 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 dialog.dismiss();
             }
         });
-        //RecyclerView recyclerView = dialog.findViewById(R.id.);
+        RecyclerView recyclerView = dialog.findViewById(R.id.);
         final MeasurementListAdapter adapter = new MeasurementListAdapter(this);
-        /*recyclerView.setAdapter(adapter);
+       recyclerView.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        measurementViewModel.getAllMeasurements().observe(this, new Observer<List<Measurements>>() {
+            @Override
+            public void onChanged(List<Measurements> measurements) {
+                adapter.setMeasurements(measurements);
+            }
+        });
+        recyclerView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            }
+        });
+
+        dialog.show();*/
+
+        dialog = new Dialog(activity);
+        dialog.setCancelable(false);
+        dialog.setContentView(R.layout.dialog_recycler);
+
+        Button btndialog = (Button) dialog.findViewById(R.id.btndialogOk);
+        btndialog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                dialog.dismiss();
+            }
+        });
+        RecyclerView recyclerView = dialog.findViewById(R.id.recycler);
+        final MeasurementListAdapter adapter = new MeasurementListAdapter(this);
+        recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         measurementViewModel.getAllMeasurements().observe(this, new Observer<List<Measurements>>() {
@@ -522,12 +610,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             public void onClick(View v) {
 
             }
-        });*/
+        });
 
         dialog.show();
 
     }
 }
-
-
-

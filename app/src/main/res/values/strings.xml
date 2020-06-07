@@ -7,7 +7,7 @@
     <string name="ExitStr">Exit</string>
     <string name="okStr">Ok</string>
     <string name="surfName">SurfaceName</string>
-    <string name="surfValue">SurfaceValue</string>
+    <string name="surfValue">999m2</string>
     <string name="addNewValue">Add measurement</string>
     <string name="surface">x m²</string>
 </resources>
