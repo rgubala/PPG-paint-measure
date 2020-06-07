@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     float surfaceArea;
     private Button btnSave;
     private Button btnRoom;
+    private Vector3 difference;
     private Vector3 camPos;
     private Vector3 camFor;
     private Vector3 newPos;
@@ -282,18 +283,18 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //wywoływane z przycisku "dodaj wymiar"
     public void addDimension(View view) {
-        if(distance != 0 && (roomPerimeter == 0 || roomHeight == 0)) {
-            if(distance != 0 && roomPerimeter == 0) {
+        if(difference.length() != 0 && (roomPerimeter == 0 || roomHeight == 0)) {
+            if(difference.length() != 0 && roomPerimeter == 0) {
                 Toast.makeText(this, "Dodano szerokość ściany.\nTeraz zmierz wysokość ściany", Toast.LENGTH_LONG).show();
-                roomPerimeter = distance;
+                roomPerimeter = difference.length();
                 distance = 0;
                 tvDistance.setText("---");
                 clearAnchor();
                 btnSave.setEnabled(false);
             }
-            if(distance != 0 && roomPerimeter != 0 && roomHeight == 0) {
+            if(difference.length() != 0 && roomPerimeter != 0 && roomHeight == 0) {
                 Toast.makeText(this, "Dodano wysokość ściany", Toast.LENGTH_LONG).show();
-                roomHeight = distance;
+                roomHeight = difference.length();
                 distance = 0;
                 tvDistance.setText("---");
                 clearAnchor();
@@ -301,11 +302,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             }
             return;
         }
-        if (distance == 0 && roomPerimeter == 0 && roomHeight == 0) {
+        if (difference.length() == 0 && roomPerimeter == 0 && roomHeight == 0) {
             Toast.makeText(this, "Jeszcze nie wykonano żadnych pomiarów", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (distance == 0 && roomPerimeter != 0 && roomHeight != 0) {
+        if (difference.length() == 0 && roomPerimeter != 0 && roomHeight != 0) {
             Toast.makeText(this, "Wykonano już wszystkie potrzebne pomiary", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -386,7 +387,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
                 Vector3 node1Pos = currentAnchorNode.get(currentAnchorNode.size() - 2).getWorldPosition();
                 Vector3 node2Pos = currentAnchorNode.get(currentAnchorNode.size() - 1).getWorldPosition();
-                Vector3 difference = Vector3.subtract(node1Pos, node2Pos);
+                difference = Vector3.subtract(node1Pos, node2Pos);
 
                 final Vector3 directionFromTopToBottom = difference.normalized();
                 final Quaternion rotationFromAToB =
