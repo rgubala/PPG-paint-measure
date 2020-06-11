@@ -10,4 +10,4 @@
     android:padding="6dp"
     android:text="Test"
     android:textAlignment="center"
-    />
+    android:textSize="8sp" />

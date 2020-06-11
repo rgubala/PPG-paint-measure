@@ -13,53 +13,106 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
-    <Button
-        android:id="@+id/buttonAdd"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="16dp"
-        android:onClick="addDimension"
-        android:text="dodaj wymiar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <TextView
         android:id="@+id/tvDistance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="50dp"
+        android:layout_height="20dp"
         android:layout_marginTop="16dp"
-        android:text="----"
+        android:background="@drawable/rounded_bg"
+        android:text="wys."
+        android:textAlignment="center"
+        android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/buttonRoom"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:onClick="calculateSurfaceArea"
-        android:text="powierzchnia ściany"
+        android:id="@+id/buttonAdd2"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_rowWeight="1"
+        android:layout_columnWeight="1"
+        android:layout_marginLeft="29dp"
+        android:layout_marginTop="797dp"
+        android:layout_marginRight="59dp"
+        android:layout_marginBottom="47dp"
+        android:background="@drawable/button_states"
+        android:foreground="@drawable/ic_back_05"
+        android:foregroundGravity="center"
+        android:foregroundTint="@android:color/background_dark"
+        android:onClick="clearAnchors"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintLeft_toRightOf="@id/buttonRoom"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/buttonAdd"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginLeft="29dp"
+        android:layout_marginTop="797dp"
+        android:layout_marginBottom="47dp"
+        android:background="@drawable/button_states"
+        android:foreground="@drawable/ic_saved_03"
+        android:foregroundGravity="center"
+        android:onClick="addDimension"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/button"
+        app:layout_constraintRight_toLeftOf="@+id/buttonRoom"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/buttonRoom"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginLeft="29dp"
+        android:layout_marginTop="797dp"
+        android:layout_marginBottom="47dp"
+        android:background="@drawable/button_states"
+        android:foreground="@drawable/ic_accept_04"
+        android:foregroundGravity="center"
+        android:onClick="calculateSurfaceArea"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@+id/buttonAdd"
+        app:layout_constraintRight_toLeftOf="@+id/buttonAdd2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/button"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:layout_marginBottom="70dp"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginLeft="60dp"
+        android:layout_marginTop="797dp"
+        android:layout_marginBottom="47dp"
+        android:background="@drawable/button_states"
+        android:foreground="@drawable/ic_plus_01"
+        android:foregroundGravity="center"
         android:onClick="addFromAim"
-        android:text="+"
+        android:textSize="25sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/buttonAdd"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/buttonUp"
+        android:layout_width="52dp"
+        android:layout_height="52dp"
+        android:layout_marginEnd="59dp"
+        android:layout_marginBottom="24dp"
+        android:text="up"
+        app:layout_constraintBottom_toTopOf="@+id/buttonAdd2"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
