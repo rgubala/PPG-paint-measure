@@ -630,6 +630,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 showAlertDialog(MainActivity.this);
                 btnSave.setEnabled(true);
                 roomHeightConfirm = 0;
+                roomPerimeter = 0;
             }
         });
 
