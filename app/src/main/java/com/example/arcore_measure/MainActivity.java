@@ -631,6 +631,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             @Override
             public void onClick(View v) {
                 dialogDoors.dismiss();
+                surfaceArea = (float) (Math.round(roomHeightConfirm * roomPerimeter * 100) / 100.0);
+                showAlertDialog(MainActivity.this);
+                btnSave.setEnabled(true);
+                roomHeightConfirm = 0;
             }
         });
 
@@ -638,12 +642,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dialogDoors.dismiss();
-                surfaceArea = (float) (Math.round(roomHeight * roomPerimeter * 100) / 100.0);
-                showAlertDialog(MainActivity.this);
-                btnSave.setEnabled(true);
+
             }
         });
+        dialogDoors.show();
     }
 
     public void showCalculatorDialog (Activity activity) {
