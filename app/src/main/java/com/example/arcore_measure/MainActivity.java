@@ -212,7 +212,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     distanceInMeters.setText(metersString);
                     tN.setRenderable(renderable);
                 });
-
     }
 
     @Override
@@ -312,13 +311,13 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     //wywoływane z przycisku "dodaj wymiar"
     public void addDimension(View view) {
         if((difference.length() != 0 || roomHeight != 0) && (roomPerimeter == 0 || roomHeightConfirm == 0)) {
-            if((difference.length() != 0 || roomHeight != 0) && roomHeightConfirm == 0) {
-                clearAnchors(view);
+            if(roomHeight != 0 && roomHeightConfirm == 0) {
                 Toast.makeText(this, "Dodano wysokość ściany.\nTeraz zmierz szerokość ściany", Toast.LENGTH_LONG).show();
                 roomHeightConfirm = roomHeight;
                 btnSave.setEnabled(false);
+                clearAnchors(view);
             }
-            if((difference.length() != 0 || roomHeight != 0) && roomHeight != 0 && roomPerimeter == 0) {
+            if(difference.length() != 0 && roomHeightConfirm != 0 && roomPerimeter == 0) {
                 Toast.makeText(this, "Dodano szerokość ściany", Toast.LENGTH_LONG).show();
                 roomPerimeter = totalLength;
                 difference = Vector3.zero();
@@ -328,11 +327,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             }
             return;
         }
-        if (difference.length() == 0 && roomPerimeter == 0 && roomHeight == 0) {
+        if (difference.length() == 0 && roomPerimeter == 0 && roomHeightConfirm == 0) {
             Toast.makeText(this, "Jeszcze nie wykonano żadnych pomiarów", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (roomPerimeter != 0 && roomHeight != 0) {
+        if (roomPerimeter != 0 && roomHeightConfirm != 0) {
             showDialog(MainActivity.this);
             return;
         }
@@ -340,11 +339,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //wywoływane z przycisku "powierzchnia ściany"
     public void calculateSurfaceArea (View view) {
-        showDoorsDialog(MainActivity.this);
-        if(roomPerimeter != 0 && roomHeight != 0) {
-            surfaceArea = (float) (Math.round(roomHeight * roomPerimeter * 100) / 100.0);
-            showAlertDialog(MainActivity.this);
-            btnSave.setEnabled(true);
+        if(roomPerimeter != 0 && roomHeightConfirm != 0) {
+            showDoorsDialog(MainActivity.this);
         }
         else
             Toast.makeText(this, "Nie wykonano wszystkich pomiarów", Toast.LENGTH_SHORT).show();
@@ -643,6 +639,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             @Override
             public void onClick(View v) {
                 dialogDoors.dismiss();
+                surfaceArea = (float) (Math.round(roomHeight * roomPerimeter * 100) / 100.0);
+                showAlertDialog(MainActivity.this);
+                btnSave.setEnabled(true);
             }
         });
     }
