@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -129,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         btnRoom.setEnabled(false);
 
         btnUp = findViewById(R.id.buttonUp);
+        btnUp.setEnabled(false);
 
         btnAdd = findViewById(R.id.button);
 
@@ -142,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
         initModel();
         heightMeasurement();
-        Toast.makeText(this, "Zmierz wysokosc pokoju", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Measure object height.", Toast.LENGTH_LONG).show();
         arFragment.setOnTapArPlaneListener(this::refreshAim);
 
         measurementViewModel = new ViewModelProvider(this).get(MeasurementViewModel.class);
@@ -319,12 +321,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         if (dimBtnFlag == false) {
             if (roomPerimeter == 0 || roomHeightConfirm == 0) {
                 if (roomHeight != 0 && roomHeightConfirm == 0) {
-                    Toast.makeText(this, "Dodano wysokość ściany.\nTeraz zmierz szerokość ściany", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Object height added.\nNow measure object width.", Toast.LENGTH_LONG).show();
                     roomHeightConfirm = roomHeight;
                     btnSave.setEnabled(false);
                 }
                 if (roomHeight == 0 && roomHeightConfirm != 0 && roomPerimeter == 0) {
-                    Toast.makeText(this, "Dodano szerokość ściany", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Object width added.", Toast.LENGTH_LONG).show();
                     roomPerimeter = totalLength;
                     difference = Vector3.zero();
                     btnSave.setEnabled(false);
@@ -343,13 +345,13 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             btnUp.setVisibility(View.GONE);
             if (objPerimeter == 0 || objHeightConfirm == 0) {
                 if (roomPerimeter != 0 && objHeightConfirm == 0) {
-                    Toast.makeText(this, "Dodano wysokość obiektu.\nTeraz zmierz szerokość obiektu", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Object height added.\nNow measure object width.", Toast.LENGTH_LONG).show();
                     objHeightConfirm = roomPerimeter;
                     roomHeight = roomPerimeter;
                     btnSave.setEnabled(false);
                 }
                 if (roomHeight == 0 && objHeightConfirm != 0 && objPerimeter == 0) {
-                    Toast.makeText(this, "Dodano szerokość obiektu", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Object width added.", Toast.LENGTH_LONG).show();
                     objPerimeter = totalLength;
                     difference = Vector3.zero();
                     btnSave.setEnabled(false);
@@ -373,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 showDoorsDialog(MainActivity.this);
             }
             else
-                Toast.makeText(this, "Nie wykonano wszystkich pomiarów", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Not all measurements were made.", Toast.LENGTH_SHORT).show();
         }
 
         else if (surfFlag == true) {
@@ -420,9 +422,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     // dodawnie punktów do powierzchni na podstawie pozycji celownika
     // dodawanie linii między punktami
     // dodawanie etykiet
-    public void addFromAim(View view) throws InterruptedException {
+    public void addFromAim(View view) {
 
         if(anchorNodeTemp != null) {
+            if(currentAnchorNode.size() == 0)
+                btnUp.setEnabled(true);
+
             Vector3 worldPosition = anchorNodeTemp.getWorldPosition();
             Quaternion worldRotation = anchorNodeTemp.getWorldRotation();
 
@@ -592,6 +597,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             public void onClick(View v) {
                 dialogSurfValue.dismiss();
                 showSaveDialog(MainActivity.this);
+
             }
         });
 
@@ -720,7 +726,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         calcSpinner = (Spinner) dialogCalculator.findViewById(R.id.calcSpinner);
         editTextPaintEff = (EditText) dialogCalculator.findViewById(R.id.editTextPaintEff);
         respond = (TextView) dialogCalculator.findViewById(R.id.respond);
-
+        respond.setText("");
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.opcje, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         calcSpinner.setAdapter(adapter);
@@ -765,12 +771,16 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         buttonCalculator.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                surfaceToPaint = Double.parseDouble(editTextGivenSurface.getText().toString());
-                paintEfficiency = Double.parseDouble(editTextPaintEff.getText().toString());
-                number1=a*surfaceToPaint*mCounter*paintEfficiency;
-                number1= (double) (Math.round(number1*100)/100.0);
-                number2=String.valueOf(number1);
-                respond.setText("You should use "+ number2 + "l of paint");
+                if(!TextUtils.isEmpty(editTextGivenSurface.getText().toString()) && !TextUtils.isEmpty(editTextPaintEff.getText().toString())) {
+                    surfaceToPaint = Double.parseDouble(editTextGivenSurface.getText().toString());
+                    paintEfficiency = Double.parseDouble(editTextPaintEff.getText().toString());
+                    number1 = a * surfaceToPaint * mCounter * paintEfficiency;
+                    number1 = (double) (Math.round(number1 * 100) / 100.0);
+                    number2 = String.valueOf(number1);
+                    respond.setText("You should use " + number2 + "l of paint");
+                }
+                else
+                    Toast.makeText(MainActivity.this, "No data found.", Toast.LENGTH_SHORT).show();
             }
         });
 

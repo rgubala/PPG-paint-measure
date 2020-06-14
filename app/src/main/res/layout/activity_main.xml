@@ -13,7 +13,7 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
@@ -22,10 +22,12 @@
         android:id="@+id/tvDistance"
         android:layout_width="50dp"
         android:layout_height="20dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="21dp"
         android:background="@drawable/rounded_bg"
-        android:text="wys."
+        android:fontFamily="@font/lato_medium"
+        android:text="hgt."
         android:textAlignment="center"
+        android:textColor="#000000"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -38,71 +40,59 @@
         android:layout_rowWeight="1"
         android:layout_columnWeight="1"
         android:layout_marginLeft="29dp"
-        android:layout_marginTop="776dp"
         android:layout_marginRight="59dp"
-        android:layout_marginBottom="68dp"
+        android:layout_marginBottom="32dp"
         android:background="@drawable/button_states"
         android:foreground="@drawable/ic_back_05"
         android:foregroundGravity="center"
         android:foregroundTint="@android:color/background_dark"
         android:onClick="clearAnchors"
-        app:layout_constraintBottom_toTopOf="@+id/button2"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/buttonRoom"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintRight_toRightOf="parent" />
 
     <Button
         android:id="@+id/buttonAdd"
         android:layout_width="52dp"
         android:layout_height="52dp"
         android:layout_marginLeft="29dp"
-        android:layout_marginTop="776dp"
-        android:layout_marginBottom="68dp"
+        android:layout_marginBottom="32dp"
         android:background="@drawable/button_states"
         android:foreground="@drawable/ic_saved_03"
         android:foregroundGravity="center"
         android:onClick="addDimension"
-        app:layout_constraintBottom_toTopOf="@+id/button2"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/button"
-        app:layout_constraintRight_toLeftOf="@+id/buttonRoom"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintRight_toLeftOf="@+id/buttonRoom" />
 
     <Button
         android:id="@+id/buttonRoom"
         android:layout_width="52dp"
         android:layout_height="52dp"
         android:layout_marginLeft="29dp"
-        android:layout_marginTop="776dp"
-        android:layout_marginBottom="68dp"
+        android:layout_marginBottom="32dp"
         android:background="@drawable/button_states"
         android:foreground="@drawable/ic_accept_04"
         android:foregroundGravity="center"
         android:onClick="calculateSurfaceArea"
-        app:layout_constraintBottom_toTopOf="@+id/button2"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@+id/buttonAdd"
-        app:layout_constraintRight_toLeftOf="@+id/buttonAdd2"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintRight_toLeftOf="@+id/buttonAdd2" />
 
     <Button
         android:id="@+id/button"
         android:layout_width="52dp"
         android:layout_height="52dp"
         android:layout_marginStart="56dp"
-        android:layout_marginTop="776dp"
-        android:layout_marginBottom="68dp"
+        android:layout_marginBottom="32dp"
         android:background="@drawable/button_states"
         android:foreground="@drawable/ic_plus_01"
         android:foregroundGravity="center"
         android:onClick="addFromAim"
         android:textSize="25sp"
-        app:layout_constraintBottom_toTopOf="@+id/button2"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/buttonAdd"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="1.0" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/buttonUp"
@@ -120,26 +110,19 @@
         tools:visibility="visible" />
 
     <Button
-        android:id="@+id/button2"
-        android:layout_width="210dp"
-        android:layout_height="45dp"
-        android:text="MEASURE"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
         android:id="@+id/button3"
-        android:layout_width="210dp"
-        android:layout_height="45dp"
-        android:backgroundTint="#B53D3D"
+        android:layout_width="100dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/recs_btns"
+        android:fontFamily="@font/lato_medium"
         android:onClick="showCalculatorDialog"
         android:text="@string/calculate"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:textColor="#000000"
+        android:textSize="12sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 
