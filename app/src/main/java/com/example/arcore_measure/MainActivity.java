@@ -389,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             arConfig.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
             mSession.configure(arConfig);
             arFragment.getArSceneView().setupSession(mSession);
-            arConfig.setPlaneFindingMode(Config.PlaneFindingMode.VERTICAL);
+            arConfig.setPlaneFindingMode(Config.PlaneFindingMode.HORIZONTAL);
             mSession.configure(arConfig);
             arFragment.getArSceneView().setupSession(mSession);
         }
