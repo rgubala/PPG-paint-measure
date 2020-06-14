@@ -630,6 +630,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 showAlertDialog(MainActivity.this);
                 btnSave.setEnabled(true);
                 roomHeightConfirm = 0;
+                roomPerimeter = 0;
             }
         });
 
@@ -637,10 +638,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                dialogDoors.dismiss();
                 Config arConfig = mSession.getConfig();
                 arConfig.setPlaneFindingMode(Config.PlaneFindingMode.VERTICAL);
                 mSession.configure(arConfig);
                 arFragment.getArSceneView().setupSession(mSession);
+
             }
         });
         dialogDoors.show();
