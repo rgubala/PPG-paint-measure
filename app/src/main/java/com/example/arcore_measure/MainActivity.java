@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.ar.core.Anchor;
 import com.google.ar.core.ArCoreApk;
+import com.google.ar.core.Config;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
 import com.google.ar.core.Session;
@@ -310,25 +311,20 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //wywoływane z przycisku "dodaj wymiar"
     public void addDimension(View view) {
-        if((difference.length() != 0 || roomHeight != 0) && (roomPerimeter == 0 || roomHeightConfirm == 0)) {
-            if(roomHeight != 0 && roomHeightConfirm == 0) {
+        if (roomPerimeter == 0 || roomHeightConfirm == 0) {
+            if (roomHeight != 0 && roomHeightConfirm == 0) {
                 Toast.makeText(this, "Dodano wysokość ściany.\nTeraz zmierz szerokość ściany", Toast.LENGTH_LONG).show();
                 roomHeightConfirm = roomHeight;
                 btnSave.setEnabled(false);
-                clearAnchors(view);
             }
-            if(difference.length() != 0 && roomHeightConfirm != 0 && roomPerimeter == 0) {
+            if (roomHeight == 0 && roomHeightConfirm != 0 && roomPerimeter == 0) {
                 Toast.makeText(this, "Dodano szerokość ściany", Toast.LENGTH_LONG).show();
                 roomPerimeter = totalLength;
                 difference = Vector3.zero();
                 btnSave.setEnabled(false);
                 btnRoom.setEnabled(true);
-                clearAnchors(view);
             }
-            return;
-        }
-        if (difference.length() == 0 && roomPerimeter == 0 && roomHeightConfirm == 0) {
-            Toast.makeText(this, "Jeszcze nie wykonano żadnych pomiarów", Toast.LENGTH_SHORT).show();
+            clearAnchors(view);
             return;
         }
         if (roomPerimeter != 0 && roomHeightConfirm != 0) {
@@ -616,7 +612,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
             }
         });
-
         dialog.show();
     }
 
@@ -642,7 +637,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         btnYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Config arConfig = mSession.getConfig();
+                arConfig.setPlaneFindingMode(Config.PlaneFindingMode.VERTICAL);
+                mSession.configure(arConfig);
+                arFragment.getArSceneView().setupSession(mSession);
             }
         });
         dialogDoors.show();
