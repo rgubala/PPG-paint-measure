@@ -78,6 +78,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private float roomPerimeter = 0;
     private float roomHeight = 0;
     private float roomHeightConfirm = 0;
+    private float objHeightConfirm = 0;
+    private float objPerimeter = 0;
     ModelRenderable pointRender, aimRender, widthLineRender, heightLineRender;
 
     public static Dialog dialog;
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private MeasurementViewModel measurementViewModel;
     public static Dialog dialogSurfValue;
     private float surfaceArea;
+    private float surfaceAreaSub;
     private float totalLength;
     private Button btnSave;
     private Button btnRoom;
@@ -92,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private Button btnAdd;
     private Button btnCalc;
     private Vector3 difference;
+    private boolean dimBtnFlag = false;
+    private boolean surfFlag = false;
 
     public static Dialog dialogDoors;
     public static Dialog dialogCalculator;
@@ -311,35 +316,83 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     //wywoływane z przycisku "dodaj wymiar"
     public void addDimension(View view) {
-        if (roomPerimeter == 0 || roomHeightConfirm == 0) {
-            if (roomHeight != 0 && roomHeightConfirm == 0) {
-                Toast.makeText(this, "Dodano wysokość ściany.\nTeraz zmierz szerokość ściany", Toast.LENGTH_LONG).show();
-                roomHeightConfirm = roomHeight;
-                btnSave.setEnabled(false);
+        if (dimBtnFlag == false) {
+            if (roomPerimeter == 0 || roomHeightConfirm == 0) {
+                if (roomHeight != 0 && roomHeightConfirm == 0) {
+                    Toast.makeText(this, "Dodano wysokość ściany.\nTeraz zmierz szerokość ściany", Toast.LENGTH_LONG).show();
+                    roomHeightConfirm = roomHeight;
+                    btnSave.setEnabled(false);
+                }
+                if (roomHeight == 0 && roomHeightConfirm != 0 && roomPerimeter == 0) {
+                    Toast.makeText(this, "Dodano szerokość ściany", Toast.LENGTH_LONG).show();
+                    roomPerimeter = totalLength;
+                    difference = Vector3.zero();
+                    btnSave.setEnabled(false);
+                    btnRoom.setEnabled(true);
+                }
+                clearAnchors(view);
+                return;
             }
-            if (roomHeight == 0 && roomHeightConfirm != 0 && roomPerimeter == 0) {
-                Toast.makeText(this, "Dodano szerokość ściany", Toast.LENGTH_LONG).show();
-                roomPerimeter = totalLength;
-                difference = Vector3.zero();
-                btnSave.setEnabled(false);
-                btnRoom.setEnabled(true);
+            if (roomPerimeter != 0 && roomHeightConfirm != 0) {
+                showDialog(MainActivity.this);
+                return;
             }
-            clearAnchors(view);
-            return;
         }
-        if (roomPerimeter != 0 && roomHeightConfirm != 0) {
-            showDialog(MainActivity.this);
-            return;
+
+        else if (dimBtnFlag == true) {
+            btnUp.setVisibility(View.GONE);
+            if (objPerimeter == 0 || objHeightConfirm == 0) {
+                if (roomPerimeter != 0 && objHeightConfirm == 0) {
+                    Toast.makeText(this, "Dodano wysokość obiektu.\nTeraz zmierz szerokość obiektu", Toast.LENGTH_LONG).show();
+                    objHeightConfirm = roomPerimeter;
+                    roomHeight = roomPerimeter;
+                    btnSave.setEnabled(false);
+                }
+                if (roomHeight == 0 && objHeightConfirm != 0 && objPerimeter == 0) {
+                    Toast.makeText(this, "Dodano szerokość obiektu", Toast.LENGTH_LONG).show();
+                    objPerimeter = totalLength;
+                    difference = Vector3.zero();
+                    btnSave.setEnabled(false);
+                    btnRoom.setEnabled(true);
+                }
+                clearAnchors(view);
+                return;
+            }
+            if (objPerimeter != 0 && objHeightConfirm != 0) {
+                surfaceAreaSub += (float) (Math.round(objHeightConfirm * objPerimeter * 100) / 100.0);
+                objHeightConfirm = 0;
+                objPerimeter = 0;
+            }
         }
     }
 
     //wywoływane z przycisku "powierzchnia ściany"
     public void calculateSurfaceArea (View view) {
-        if(roomPerimeter != 0 && roomHeightConfirm != 0) {
-            showDoorsDialog(MainActivity.this);
+        if (surfFlag == false) {
+            if(roomPerimeter != 0 && roomHeightConfirm != 0) {
+                showDoorsDialog(MainActivity.this);
+            }
+            else
+                Toast.makeText(this, "Nie wykonano wszystkich pomiarów", Toast.LENGTH_SHORT).show();
         }
-        else
-            Toast.makeText(this, "Nie wykonano wszystkich pomiarów", Toast.LENGTH_SHORT).show();
+
+        else if (surfFlag == true) {
+            surfaceArea = (Math.round ((float) (Math.round(roomHeightConfirm * roomPerimeter * 100) / 100.0)) - surfaceAreaSub);
+            showAlertDialog(MainActivity.this);
+            btnSave.setEnabled(true);
+            roomHeightConfirm = 0;
+            roomPerimeter = 0;
+            surfFlag = false;
+            dimBtnFlag = false;
+            btnUp.setVisibility(View.VISIBLE);
+            Config arConfig = mSession.getConfig();
+            arConfig.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
+            mSession.configure(arConfig);
+            arFragment.getArSceneView().setupSession(mSession);
+            arConfig.setPlaneFindingMode(Config.PlaneFindingMode.VERTICAL);
+            mSession.configure(arConfig);
+            arFragment.getArSceneView().setupSession(mSession);
+        }
     }
 
     // celownik jeżdżący po powierzchni
@@ -640,10 +693,14 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             public void onClick(View v) {
                 dialogDoors.dismiss();
                 Config arConfig = mSession.getConfig();
+                arConfig.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
+                mSession.configure(arConfig);
+                arFragment.getArSceneView().setupSession(mSession);
                 arConfig.setPlaneFindingMode(Config.PlaneFindingMode.VERTICAL);
                 mSession.configure(arConfig);
                 arFragment.getArSceneView().setupSession(mSession);
-
+                dimBtnFlag = true;
+                surfFlag = true;
             }
         });
         dialogDoors.show();
