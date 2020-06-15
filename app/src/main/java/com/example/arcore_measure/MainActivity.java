@@ -727,34 +727,9 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         buttonCalculator = (Button) dialogCalculator.findViewById(R.id.buttonCalculator);
         editTextGivenSurface = (EditText) dialogCalculator.findViewById(R.id.editTextGivenSurface);
         calcTextViewLayers = (TextView) dialogCalculator.findViewById(R.id.calcTextViewLayers);
-        calcSpinner = (Spinner) dialogCalculator.findViewById(R.id.calcSpinner);
         editTextPaintEff = (EditText) dialogCalculator.findViewById(R.id.editTextPaintEff);
         respond = (TextView) dialogCalculator.findViewById(R.id.respond);
         respond.setText("");
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.opcje, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        calcSpinner.setAdapter(adapter);
-        calcSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String text = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(),text,Toast.LENGTH_SHORT).show();
-                switch (position){
-                    case 0:
-                        a=1;
-                        break;
-                    case 1:
-                        a=1.2;
-                        break;
-                    case 2:
-                        a=1.4;
-                        break;
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
-        });
 
         buttonSub.setOnClickListener(new View.OnClickListener() {
             @Override
