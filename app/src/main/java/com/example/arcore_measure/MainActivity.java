@@ -75,14 +75,12 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private AnchorNode anchorNodeTemp;
     private AnchorNode anchorNodeHeight = null;
     private ArrayList<Anchor> currentAnchor = new ArrayList<>();
-
     private float roomPerimeter = 0;
     private float roomHeight = 0;
     private float roomHeightConfirm = 0;
     private float objHeightConfirm = 0;
     private float objPerimeter = 0;
     ModelRenderable pointRender, aimRender, widthLineRender, heightLineRender;
-
     public static Dialog dialog;
     public static Dialog dialogSave;
     private MeasurementViewModel measurementViewModel;
@@ -98,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     private Vector3 difference;
     private boolean dimBtnFlag = false;
     private boolean surfFlag = false;
-
     public static Dialog dialogDoors;
     public static Dialog dialogCalculator;
     Button buttonSub, buttonAdd,buttonCalculator;
@@ -123,10 +120,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         arFragment = (ArFragment) getSupportFragmentManager().findFragmentById(R.id.ux_fragment);
         tvDistance = findViewById(R.id.tvDistance);
 
-        btnSave = (Button) findViewById(R.id.buttonAdd);
+        btnSave = findViewById(R.id.buttonAdd);
         btnSave.setEnabled(false);
 
-        btnRoom = (Button) findViewById(R.id.buttonRoom);
+        btnRoom = findViewById(R.id.buttonRoom);
         btnRoom.setEnabled(false);
 
         btnUp = findViewById(R.id.buttonUp);
@@ -135,16 +132,13 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         btnAdd = findViewById(R.id.button);
 
         btnCalc = findViewById(R.id.button3);
-        btnCalc.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showCalculatorDialog(MainActivity.this);
-            }
-        });
+        btnCalc.setOnClickListener(v -> showCalculatorDialog(MainActivity.this));
 
         initModel();
         heightMeasurement();
+
         Toast.makeText(this, "Measure object height.", Toast.LENGTH_LONG).show();
+
         arFragment.setOnTapArPlaneListener(this::refreshAim);
 
         measurementViewModel = new ViewModelProvider(this).get(MeasurementViewModel.class);
@@ -196,14 +190,11 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     widthLineRender = ShapeFactory.makeCube(new Vector3(.015f, 0, 1f), zero(), material);
                     widthLineRender.setShadowCaster(false);
                     widthLineRender.setShadowReceiver(false);
-
                 });
-
     }
 
     // renderowanie etykiety z odelgłością
     void initTextBox(float meters, TransformableNode tN) {
-
         ViewRenderable.builder()
                 .setView(this, R.layout.distance)
                 .build()
@@ -213,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     renderable.setVerticalAlignment(ViewRenderable.VerticalAlignment.BOTTOM);
                     TextView distanceInMeters = (TextView) renderable.getView();
                     String metersString;
-                    if(meters < 1f)
+                    if (meters < 1f)
                         metersString = String.format(Locale.ENGLISH, "%.0f", meters*100) + " cm";
                     else
                         metersString = String.format(Locale.ENGLISH, "%.2f", meters) + " m";
@@ -225,20 +216,17 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     @Override
     protected void onResume() {
         super.onResume();
-
         // ARCore requires camera permission to operate.
         if (!CameraPermissionHelper.hasCameraPermission(this)) {
             CameraPermissionHelper.requestCameraPermission(this);
             return;
         }
-
         try {
             if (mSession == null) {
                 switch (ArCoreApk.getInstance().requestInstall(this, mUserRequestedInstall)) {
                     case INSTALLED:
                         // Success, create the AR session.
                         mSession = new Session(this);
-
                         break;
                     case INSTALL_REQUESTED:
                         // Ensures next invocation of requestInstall() will either return
@@ -305,9 +293,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     // obracanie etykiet zgodnie z ruchami kamery
     private void labelsRotation() {
         Vector3 cameraPosition = arFragment.getArSceneView().getScene().getCamera().getWorldPosition();
-
-        if(labelArray != null) {
-            for(AnchorNode labelNode : labelArray) {
+        if (labelArray != null) {
+            for (AnchorNode labelNode : labelArray) {
                 Vector3 labelPosition = labelNode.getWorldPosition();
                 Vector3 direction = Vector3.subtract(cameraPosition, labelPosition);
                 Quaternion lookRotation = Quaternion.lookRotation(direction, Vector3.up());
@@ -372,7 +359,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     //wywoływane z przycisku "powierzchnia ściany"
     public void calculateSurfaceArea (View view) {
         if (surfFlag == false) {
-            if(roomPerimeter != 0 && roomHeightConfirm != 0) {
+            if (roomPerimeter != 0 && roomHeightConfirm != 0) {
                 showDoorsDialog(MainActivity.this);
             }
             else
@@ -403,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         if (aimRender == null)
             return;
 
-        if(motionEvent.getMetaState() == 0) {
+        if (motionEvent.getMetaState() == 0) {
             if (anchorNodeTemp != null)
                 anchorNodeTemp.getAnchor().detach();
 
@@ -415,7 +402,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             transformableNode.setParent(anchorNode);
             arFragment.getArSceneView().getScene().addOnUpdateListener(this);
             arFragment.getArSceneView().getScene().addChild(anchorNode);
-
             anchorNodeTemp = anchorNode;
         }
     }
@@ -424,9 +410,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     // dodawanie linii między punktami
     // dodawanie etykiet
     public void addFromAim(View view) {
-
-        if(anchorNodeTemp != null) {
-            if(currentAnchorNode.size() == 0)
+        if (anchorNodeTemp != null) {
+            if (currentAnchorNode.size() == 0)
                 btnUp.setEnabled(true);
 
             Vector3 worldPosition = anchorNodeTemp.getWorldPosition();
@@ -438,18 +423,16 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             confirmedAnchorNode.setWorldPosition(worldPosition);
             confirmedAnchorNode.setWorldRotation(worldRotation);
             Anchor anchor = confirmedAnchorNode.getAnchor();
-
             confirmedAnchorNode.setParent(arFragment.getArSceneView().getScene());
             TransformableNode transformableNode = new TransformableNode(arFragment.getTransformationSystem());
             transformableNode.setRenderable(pointRender);
             transformableNode.setParent(confirmedAnchorNode);
             arFragment.getArSceneView().getScene().addOnUpdateListener(this);
             arFragment.getArSceneView().getScene().addChild(confirmedAnchorNode);
-
             currentAnchor.add(anchor);
             currentAnchorNode.add(confirmedAnchorNode);
 
-            if(currentAnchorNode.size() >= 2) {
+            if (currentAnchorNode.size() >= 2) {
 
                 Vector3 node1Pos = currentAnchorNode.get(currentAnchorNode.size() - 2).getWorldPosition();
                 Vector3 node2Pos = currentAnchorNode.get(currentAnchorNode.size() - 1).getWorldPosition();
@@ -495,7 +478,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     anchorNodeHeight = currentAnchorNode.get(0);
                 }
 
-                switch(event.getAction()) {
+                switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         if (mHandler != null) return true;
                         mHandler = new Handler();
@@ -515,10 +498,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
             Runnable mAction = new Runnable() {
                 @SuppressLint({"ClickableViewAccessibility", "SetTextI18n"})
                 @Override public void run() {
-                    if(anchorNodeHeight!=null) {
+                    if (anchorNodeHeight!=null) {
                         Vector3 worldPosition = anchorNodeHeight.getWorldPosition();
                         Quaternion worldRotation = anchorNodeHeight.getWorldRotation();
-                        if(roomHeight == 0) {
+                        if (roomHeight == 0) {
                             AnchorNode stand = new AnchorNode();
                             worldPosition.x += 0.0000001f;
                             stand.setWorldPosition(worldPosition);
@@ -527,26 +510,24 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                             TransformableNode tN = new TransformableNode(arFragment.getTransformationSystem());
                             tN.setRenderable(aimRender);
                             tN.setParent(stand);
-
                             arFragment.getArSceneView().getScene().addOnUpdateListener(MainActivity.this);
                             arFragment.getArSceneView().getScene().addChild(stand);
                         }
-
                         worldPosition.y += 0.01f;
                         AnchorNode anchorNode = new AnchorNode();
                         anchorNode.setWorldPosition(worldPosition);
                         anchorNode.setWorldRotation(worldRotation);
-
                         anchorNode.setParent(arFragment.getArSceneView().getScene());
                         TransformableNode transformableNode = new TransformableNode(arFragment.getTransformationSystem());
                         transformableNode.setRenderable(heightLineRender);
                         transformableNode.setParent(anchorNode);
 
                         roomHeight += 0.01f;
-                        if(roomHeight < 1f)
+                        if (roomHeight < 1f)
                             tvDistance.setText(String.format(Locale.ENGLISH, "%.0f", roomHeight*100) + " cm");
                         else
                             tvDistance.setText(String.format(Locale.ENGLISH, "%.2f", roomHeight) + " m");
+
                         anchorNodeHeight = anchorNode;
                         arFragment.getArSceneView().getScene().addOnUpdateListener(MainActivity.this);
                         arFragment.getArSceneView().getScene().addChild(anchorNode);
@@ -559,7 +540,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
 
     // imitowanie kliknięć na środek ekranu (do celownika)
     private void touchScreenCenterConstantly() {
-
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis() + 10;
 
@@ -582,26 +562,16 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         dialogSurfValue.setCancelable(false);
         dialogSurfValue.setContentView(R.layout.dialog_surface);
         dialogSurfValue.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        TextView textViewSurfaceValue = (TextView) dialogSurfValue.findViewById(R.id.textViewSurfaceValue);
+        TextView textViewSurfaceValue = dialogSurfValue.findViewById(R.id.textViewSurfaceValue);
         textViewSurfaceValue.setText("This surface is " + surfaceArea +" m\u00B2");
-        Button btnOk = (Button) dialogSurfValue.findViewById(R.id.btnSurfOK);
-        btnOk.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialogSurfValue.dismiss();
-            }
+        Button btnOk = dialogSurfValue.findViewById(R.id.btnSurfOK);
+        btnOk.setOnClickListener(v -> dialogSurfValue.dismiss());
+
+        Button btnSave = dialogSurfValue.findViewById(R.id.btnSurfSave);
+        btnSave.setOnClickListener(v -> {
+            dialogSurfValue.dismiss();
+            showSaveDialog(MainActivity.this);
         });
-
-        Button btnSave = (Button) dialogSurfValue.findViewById(R.id.btnSurfSave);
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialogSurfValue.dismiss();
-                showSaveDialog(MainActivity.this);
-
-            }
-        });
-
         dialogSurfValue.show();
     }
 
@@ -612,66 +582,40 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         dialogSave.setContentView(R.layout.dialog_save);
         dialogSave.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
-        Button btnExit = (Button) dialogSave.findViewById(R.id.btndialogExit);
-        btnExit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialogSave.dismiss();
-            }
-        });
+        Button btnExit = dialogSave.findViewById(R.id.btndialogExit);
+        btnExit.setOnClickListener(v -> dialogSave.dismiss());
 
-        Button btnSave = (Button) dialogSave.findViewById(R.id.btndialogSave);
-        EditText nameSurf = (EditText) dialogSave.findViewById(R.id.editTextNameSufr);
-        TextView textViewSurfValue = (TextView) dialogSave.findViewById(R.id.surfValueTextView);
+        Button btnSave = dialogSave.findViewById(R.id.btndialogSave);
+        EditText nameSurf = dialogSave.findViewById(R.id.editTextNameSufr);
+        TextView textViewSurfValue = dialogSave.findViewById(R.id.surfValueTextView);
         textViewSurfValue.setText(surfaceArea + "m\u00B2");
 
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Measurements measure = new Measurements(nameSurf.getText().toString(), Float.valueOf(surfaceArea));
-                measurementViewModel.insert(measure);
-                showDialog(MainActivity.this);
-                dialogSave.dismiss();
-            }
+        btnSave.setOnClickListener(v -> {
+            Measurements measure = new Measurements(nameSurf.getText().toString(), Float.valueOf(surfaceArea));
+            measurementViewModel.insert(measure);
+            showDialog(MainActivity.this);
+            dialogSave.dismiss();
         });
-
         dialogSave.show();
     }
 
     /* Okno z zapisanymi powierzchniami*/
     public void showDialog(Activity activity){
-
         dialog = new Dialog(activity);
         dialog.setCancelable(false);
         dialog.setContentView(R.layout.dialog_recycler);
         dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
-        Button btndialog = (Button) dialog.findViewById(R.id.btndialogOk);
-        btndialog.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialog.dismiss();
-            }
-        });
+        Button btndialog = dialog.findViewById(R.id.btndialogOk);
+        btndialog.setOnClickListener(v -> dialog.dismiss());
+
         RecyclerView recyclerView = dialog.findViewById(R.id.recycler);
         final MeasurementListAdapter adapter = new MeasurementListAdapter(this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        measurementViewModel.getAllMeasurements().observe(this, new Observer<List<Measurements>>() {
-
-            @Override
-            public void onChanged(List<Measurements> measurements) {
-                adapter.setMeasurements(measurements);
-            }
-        });
-
-        recyclerView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
+        measurementViewModel.getAllMeasurements().observe(this, measurements -> adapter.setMeasurements(measurements));
+        recyclerView.setOnClickListener(v -> {});
         dialog.show();
     }
 
@@ -682,36 +626,30 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         dialogDoors.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
         Button btnNo = dialogDoors.findViewById(R.id.btnSubtractNo);
-        btnNo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialogDoors.dismiss();
-                surfaceArea = (float) (Math.round(roomHeightConfirm * roomPerimeter * 100) / 100.0);
-                showAlertDialog(MainActivity.this);
-                btnSave.setEnabled(true);
-                btnUp.setVisibility(View.VISIBLE);
-                btnUp.setEnabled(true);
-                roomHeightConfirm = 0;
-                roomPerimeter = 0;
-            }
+        btnNo.setOnClickListener(v -> {
+            dialogDoors.dismiss();
+            surfaceArea = (float) (Math.round(roomHeightConfirm * roomPerimeter * 100) / 100.0);
+            showAlertDialog(MainActivity.this);
+            btnSave.setEnabled(true);
+            btnUp.setVisibility(View.VISIBLE);
+            btnUp.setEnabled(true);
+            roomHeightConfirm = 0;
+            roomPerimeter = 0;
         });
 
         Button btnYes = dialogDoors.findViewById(R.id.btnSurfSave);
-        btnYes.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialogDoors.dismiss();
-                Config arConfig = mSession.getConfig();
-                arConfig.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
-                mSession.configure(arConfig);
-                arFragment.getArSceneView().setupSession(mSession);
-                arConfig.setPlaneFindingMode(Config.PlaneFindingMode.VERTICAL);
-                mSession.configure(arConfig);
-                arFragment.getArSceneView().setupSession(mSession);
-                btnUp.setVisibility(View.GONE);
-                dimBtnFlag = true;
-                surfFlag = true;
-            }
+        btnYes.setOnClickListener(v -> {
+            dialogDoors.dismiss();
+            Config arConfig = mSession.getConfig();
+            arConfig.setPlaneFindingMode(Config.PlaneFindingMode.DISABLED);
+            mSession.configure(arConfig);
+            arFragment.getArSceneView().setupSession(mSession);
+            arConfig.setPlaneFindingMode(Config.PlaneFindingMode.VERTICAL);
+            mSession.configure(arConfig);
+            arFragment.getArSceneView().setupSession(mSession);
+            btnUp.setVisibility(View.GONE);
+            dimBtnFlag = true;
+            surfFlag = true;
         });
         dialogDoors.show();
     }
@@ -722,58 +660,43 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         dialogCalculator.setContentView(R.layout.dialog_calculator);
         dialogCalculator.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
 
-        buttonSub = (Button) dialogCalculator.findViewById(R.id.buttonSub);
-        buttonAdd = (Button) dialogCalculator.findViewById(R.id.buttonAdd);
-        buttonCalculator = (Button) dialogCalculator.findViewById(R.id.buttonCalculator);
-        editTextGivenSurface = (EditText) dialogCalculator.findViewById(R.id.editTextGivenSurface);
-        calcTextViewLayers = (TextView) dialogCalculator.findViewById(R.id.calcTextViewLayers);
+        buttonSub = dialogCalculator.findViewById(R.id.buttonSub);
+        buttonAdd = dialogCalculator.findViewById(R.id.buttonAdd);
+        buttonCalculator = dialogCalculator.findViewById(R.id.buttonCalculator);
+        editTextGivenSurface = dialogCalculator.findViewById(R.id.editTextGivenSurface);
+        calcTextViewLayers = dialogCalculator.findViewById(R.id.calcTextViewLayers);
         excPaint = dialogCalculator.findViewById(R.id.excPaint);
-        editTextPaintEff = (EditText) dialogCalculator.findViewById(R.id.editTextPaintEff);
-        respond = (TextView) dialogCalculator.findViewById(R.id.respond);
+        editTextPaintEff = dialogCalculator.findViewById(R.id.editTextPaintEff);
+        respond = dialogCalculator.findViewById(R.id.respond);
         respond.setText("");
 
-        buttonSub.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCounter--;
-                calcTextViewLayers.setText(Integer.toString(mCounter));
-            }
+        buttonSub.setOnClickListener(v -> {
+            mCounter--;
+            calcTextViewLayers.setText(Integer.toString(mCounter));
         });
 
-        buttonAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCounter++;
-                calcTextViewLayers.setText(Integer.toString(mCounter));
-            }
+        buttonAdd.setOnClickListener(v -> {
+            mCounter++;
+            calcTextViewLayers.setText(Integer.toString(mCounter));
         });
 
-        buttonCalculator.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!TextUtils.isEmpty(editTextGivenSurface.getText().toString()) && !TextUtils.isEmpty(editTextPaintEff.getText().toString())) {
-                    surfaceToPaint = Double.parseDouble(editTextGivenSurface.getText().toString());
-                    paintEfficiency = Double.parseDouble(editTextPaintEff.getText().toString());
-                    number1 = (surfaceToPaint / paintEfficiency) * mCounter;
-                    number1 = (double) (Math.round(number1 * 100) / 100.0);
-                    surplus = number1 * 0.1;
-                    number2 = String.valueOf(Math.round(number1 + surplus));
-                    respond.setText("You should use " + number2 + "l of paint");
-                    excPaint.setVisibility(View.VISIBLE);
-                }
-                else
-                    Toast.makeText(MainActivity.this, "No data found.", Toast.LENGTH_SHORT).show();
+        buttonCalculator.setOnClickListener(v -> {
+            if(!TextUtils.isEmpty(editTextGivenSurface.getText().toString()) && !TextUtils.isEmpty(editTextPaintEff.getText().toString())) {
+                surfaceToPaint = Double.parseDouble(editTextGivenSurface.getText().toString());
+                paintEfficiency = Double.parseDouble(editTextPaintEff.getText().toString());
+                number1 = (surfaceToPaint / paintEfficiency) * mCounter;
+                number1 = (Math.round(number1 * 100) / 100.0);
+                surplus = (Math.round(number1 * 0.1));
+                number2 = String.valueOf(number1 + surplus);
+                respond.setText("You should use " + number2 + "l of paint");
+                excPaint.setVisibility(View.VISIBLE);
             }
+            else
+                Toast.makeText(MainActivity.this, "No data found.", Toast.LENGTH_SHORT).show();
         });
 
         Button btnExt = dialogCalculator.findViewById(R.id.buttonCalculatorExit);
-        btnExt.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dialogCalculator.dismiss();
-            }
-        });
-
+        btnExt.setOnClickListener(v -> dialogCalculator.dismiss());
         dialogCalculator.show();
     }
 }
