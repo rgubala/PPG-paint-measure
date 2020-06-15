@@ -778,7 +778,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 if(!TextUtils.isEmpty(editTextGivenSurface.getText().toString()) && !TextUtils.isEmpty(editTextPaintEff.getText().toString())) {
                     surfaceToPaint = Double.parseDouble(editTextGivenSurface.getText().toString());
                     paintEfficiency = Double.parseDouble(editTextPaintEff.getText().toString());
-                    number1 = a * surfaceToPaint * mCounter * paintEfficiency;
+                    number1 = (surfaceToPaint / paintEfficiency) * mCounter;
                     number1 = (double) (Math.round(number1 * 100) / 100.0);
                     number2 = String.valueOf(number1);
                     respond.setText("You should use " + number2 + "l of paint");
