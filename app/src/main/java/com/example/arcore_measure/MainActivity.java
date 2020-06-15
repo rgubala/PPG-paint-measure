@@ -102,13 +102,13 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
     public static Dialog dialogDoors;
     public static Dialog dialogCalculator;
     Button buttonSub, buttonAdd,buttonCalculator;
-    TextView calcTextViewLayers, respond;
-    Spinner calcSpinner;
+    TextView calcTextViewLayers, respond , excPaint;
     EditText editTextPaintEff, editTextGivenSurface;
     private int mCounter=1;
-    double a,paintEfficiency, surfaceToPaint;
+    double paintEfficiency, surfaceToPaint;
     double number1;
     String number2;
+    private double surplus = 0;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -727,6 +727,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         buttonCalculator = (Button) dialogCalculator.findViewById(R.id.buttonCalculator);
         editTextGivenSurface = (EditText) dialogCalculator.findViewById(R.id.editTextGivenSurface);
         calcTextViewLayers = (TextView) dialogCalculator.findViewById(R.id.calcTextViewLayers);
+        excPaint = dialogCalculator.findViewById(R.id.excPaint);
         editTextPaintEff = (EditText) dialogCalculator.findViewById(R.id.editTextPaintEff);
         respond = (TextView) dialogCalculator.findViewById(R.id.respond);
         respond.setText("");
@@ -755,8 +756,10 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     paintEfficiency = Double.parseDouble(editTextPaintEff.getText().toString());
                     number1 = (surfaceToPaint / paintEfficiency) * mCounter;
                     number1 = (double) (Math.round(number1 * 100) / 100.0);
-                    number2 = String.valueOf(number1);
+                    surplus = number1 * 0.1;
+                    number2 = String.valueOf(Math.round(number1 + surplus));
                     respond.setText("You should use " + number2 + "l of paint");
+                    excPaint.setVisibility(View.VISIBLE);
                 }
                 else
                     Toast.makeText(MainActivity.this, "No data found.", Toast.LENGTH_SHORT).show();
