@@ -324,6 +324,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                     Toast.makeText(this, "Object height added.\nNow measure object width.", Toast.LENGTH_LONG).show();
                     roomHeightConfirm = roomHeight;
                     btnSave.setEnabled(false);
+                    btnUp.setEnabled(false);
+                    btnUp.setVisibility(View.GONE);
                 }
                 if (roomHeight == 0 && roomHeightConfirm != 0 && roomPerimeter == 0) {
                     Toast.makeText(this, "Object width added.", Toast.LENGTH_LONG).show();
@@ -342,7 +344,6 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
         }
 
         else if (dimBtnFlag == true) {
-            btnUp.setVisibility(View.GONE);
             if (objPerimeter == 0 || objHeightConfirm == 0) {
                 if (roomPerimeter != 0 && objHeightConfirm == 0) {
                     Toast.makeText(this, "Object height added.\nNow measure object width.", Toast.LENGTH_LONG).show();
@@ -688,6 +689,8 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 surfaceArea = (float) (Math.round(roomHeightConfirm * roomPerimeter * 100) / 100.0);
                 showAlertDialog(MainActivity.this);
                 btnSave.setEnabled(true);
+                btnUp.setVisibility(View.VISIBLE);
+                btnUp.setEnabled(true);
                 roomHeightConfirm = 0;
                 roomPerimeter = 0;
             }
@@ -705,6 +708,7 @@ public class MainActivity extends AppCompatActivity implements Scene.OnUpdateLis
                 arConfig.setPlaneFindingMode(Config.PlaneFindingMode.VERTICAL);
                 mSession.configure(arConfig);
                 arFragment.getArSceneView().setupSession(mSession);
+                btnUp.setVisibility(View.GONE);
                 dimBtnFlag = true;
                 surfFlag = true;
             }
