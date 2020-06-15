@@ -20,7 +20,7 @@
     <string name="m2">m²</string>
     <string name="calculate">Calculate</string>
     <string name="respondString">You should use 1000l of paint</string>
-    <string name="subtractQuestion">Do you want to add any doors or windows?</string>
+    <string name="subtractQuestion">Do you want to remove some areas from selected surface like doors or windows?</string>
     <string name="noSubButton">No</string>
     <string name="yesSubButton">Yes</string>
     <string name="calculatorExit">Exit</string>
